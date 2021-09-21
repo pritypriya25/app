@@ -1,0 +1,48 @@
+version: '3.7'
+services:
+  node:
+    image: node
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on: 
+      - trino-coordinator
+      - mongodb
+    ports: 
+      - 3000:3000
+    volumes: 
+      - .:/usr/src/app
+
+  trino-coordinator:
+    image: 'trinodb/trino:latest'
+    hostname: trino-coordinator
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./etc:/etc/trino
+    networks:
+      - trino-network
+
+  mongodb:
+    image: 'mongo:latest'
+    hostname: mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongodb/database:/data/db
+    networks:
+      - trino-network
+
+  cassandra:
+    image: 'cassandra:latest'
+    hostname: cassandra
+    ports: 
+      - '9042:9042'
+    volumes: 
+      - ./cassandra/database:/data/db
+    networks: 
+      - trino-network
+
+networks:
+  trino-network:
+    driver: bridge
